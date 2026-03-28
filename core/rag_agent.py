@@ -3,15 +3,21 @@ from langchain_community.embeddings import HuggingFaceEmbeddings
 from ingestion.documentloader import chunks
 import google.generativeai as genai 
 import time
+from core.utils import retry
 
 embeddings = HuggingFaceEmbeddings(
     model_name="sentence-transformers/all-MiniLM-L6-v2"
 )
 
-model = genai.GenerativeModel("gemini-2.5-flash")
+model = genai.GenerativeModel("gemma-3-1b-it")
 
 vector_db = FAISS.from_documents(chunks, embeddings)
 retriever = vector_db.as_retriever(search_kwargs={"k":3})
+
+@retry
+def call_llm(prompt):
+    response = model.generate_content(prompt)
+    return response.text.strip()
 
 def run_rag_agent(question):
     docs = retriever.invoke(question)
@@ -24,10 +30,10 @@ def run_rag_agent(question):
     question: {question}
     Answer :
     """
-    response = model.generate_content(prompt)
+    answer = call_llm(prompt)
     time.sleep(2)
     return {
-        "answer": response.text.strip(),
+        "answer": answer,
         "sources": [doc.page_content[:150] for doc in docs]
     }
 

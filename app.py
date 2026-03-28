@@ -3,7 +3,7 @@ from pydantic import BaseModel
 
 from core.sql_agent import run_sql_agent
 from core.rag_agent import run_rag_agent
-from core.intent import classify_intent
+from core.intent import classify_query
 
 app = FastAPI(
     title="AI Business Data Assistant",
@@ -31,7 +31,7 @@ async def query(request: QueryRequest):
     if not question:
         raise HTTPException(status_code=400, detail="Question cannot be empty.")
 
-    intent = classify_intent(question)
+    intent = classify_query(question)
 
     if intent == "sql":
         result = run_sql_agent(question)
