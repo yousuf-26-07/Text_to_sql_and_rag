@@ -1,0 +1,9 @@
+fastapi
+uvicorn
+pydantic
+google-generativeai
+streamlit
+requests
+faiss-cpu
+langchain_community
+sentence-transformers
