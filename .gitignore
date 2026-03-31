@@ -16,3 +16,6 @@ __pycache__/
 # Vector DB (optional large)
 faiss_index/
 vector_db/
+
+# Documents
+document/
