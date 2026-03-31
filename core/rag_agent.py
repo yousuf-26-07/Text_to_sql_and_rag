@@ -3,15 +3,12 @@ from langchain_community.embeddings import HuggingFaceEmbeddings
 import google.generativeai as genai 
 import time
 from core.utils import retry
+from ingestion.pdf_ingestion import get_retriever
 
-embeddings = HuggingFaceEmbeddings(
-    model_name="sentence-transformers/all-MiniLM-L6-v2"
-)
 
 model = genai.GenerativeModel("gemma-3-1b-it")
 
-vector_db = FAISS.from_documents(chunks, embeddings)
-retriever = vector_db.as_retriever(search_kwargs={"k":3})
+
 
 @retry
 def call_llm(prompt):
@@ -19,11 +16,15 @@ def call_llm(prompt):
     return response.text.strip()
 
 def run_rag_agent(question):
+    retriever = get_retriever()
+    if retriever is None:
+        return {"answer": "No document has been uploaded yet. Please upload a file first.", "sources": []}
     docs = retriever.invoke(question)
     context = "\n\n".join([doc.page_content for doc in docs])
     prompt = f"""You are a helpful ai assitant 
     Use the context below to answer the question clearly and concisely.
-    Limit your answer to 50 words.
+    Give answer in bullet points if possible.
+    Limit your answer to 500 words.
     
     Context: {context}
     question: {question}

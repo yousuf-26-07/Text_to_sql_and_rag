@@ -1,7 +1,7 @@
 from fastapi import UploadFile
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
-
+from ingestion.pdf_ingestion import create_vector_db
 from core.sql_agent import run_sql_agent
 from core.rag_agent import run_rag_agent
 from core.intent import classify_query
@@ -37,29 +37,30 @@ async def query(request: QueryRequest):
 
     if intent == "sql":
         result = run_sql_agent(question)
-        answer = result["answer"]  
-        sql = result["sql"]
+        answer = result.get("answer", "")
+        sql = result.get("sql", "")
         sources = []
 
     else:
         result = run_rag_agent(question)
-        answer = result["answer"]
+        answer = result.get("answer", "")
         sql = ""
         sources = result.get("sources", [])
 
     return QueryResponse(
         answer=answer,
-        source=intent,
-        sql=sql,
+        source=intent,   # rename later to "intent"
+        sql=sql,    
         sources=sources
     )
-
+    
 @app.post("/upload")
 async def upload(file: UploadFile):
     file_path = "document/" + file.filename
     with open(file_path, "wb") as f:
         f.write(await file.read())
-    load_document(file_path)
+    chunks = load_document(file_path)
+    create_vector_db(chunks)
     return {"message": "File uploaded successfully"}
 
 @app.get("/health")
@@ -69,4 +70,4 @@ async def health():
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run("app:app", host="0.0.0.0", port=8000, reload=True)
+    uvicorn.run("app:app", host="0.0.0.0", port=8000, reload=False)

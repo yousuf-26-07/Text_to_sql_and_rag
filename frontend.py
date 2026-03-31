@@ -35,13 +35,11 @@ if st.button("Ask"):
     st.write("Answer:")
     st.success(data.get("answer", ""))
 
-    st.write("Source:", data.get("source", ""))
-
     if data.get("sql"):
         st.write("SQL Query:")
         st.code(data["sql"])
 
-    if data.get("sources"):
-        st.write("Sources:")
-        for s in data["sources"]:
-            st.code(s)
+    # if data.get("sources"):
+    #     st.write("Sources:")
+    #     for s in data["sources"]:
+    #         st.code(s)
