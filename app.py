@@ -1,10 +1,11 @@
+from fastapi import UploadFile
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 
 from core.sql_agent import run_sql_agent
 from core.rag_agent import run_rag_agent
 from core.intent import classify_query
-
+from ingestion.documentloader import load_document
 app = FastAPI(
     title="AI Business Data Assistant",
     description="Ask questions about your business data in plain English.",
@@ -20,6 +21,7 @@ class QueryResponse(BaseModel):
     answer: str
     source: str
     sql: str
+    sources: list = []
     
 
 
@@ -52,6 +54,13 @@ async def query(request: QueryRequest):
         sources=sources
     )
 
+@app.post("/upload")
+async def upload(file: UploadFile):
+    file_path = "document/" + file.filename
+    with open(file_path, "wb") as f:
+        f.write(await file.read())
+    load_document(file_path)
+    return {"message": "File uploaded successfully"}
 
 @app.get("/health")
 async def health():

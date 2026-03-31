@@ -1,6 +1,5 @@
 from langchain_community.vectorstores import FAISS
 from langchain_community.embeddings import HuggingFaceEmbeddings
-from ingestion.documentloader import chunks
 import google.generativeai as genai 
 import time
 from core.utils import retry

@@ -8,4 +8,3 @@ def load_document(file_path):
     chunks = splitter.split_documents(document)
     return chunks
 
-chunks = load_document("document/sample.txt")
